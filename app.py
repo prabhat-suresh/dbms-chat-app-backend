@@ -68,7 +68,7 @@ def get_user_friends(username):
     # Connect to the database
     conn = psycopg2.connect(database="discord",
                             user="postgres",
-                            password="1234",
+                            password="postgres",
                             host="localhost",
                             port="5433")
     
@@ -89,4 +89,12 @@ def get_user_friends(username):
 
 
 if __name__ == '__main__': 
+
+    conn = psycopg2.connect(database="discord",
+                            user="postgres",
+                            password="postgres",
+                            host="localhost",
+                            port="5433")
+
+    print(conn)
     app.run(debug=True, port=5000)
