@@ -5,6 +5,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # Add this line to enable CORS for all routes
 
+pswd="1234"
+port_num="5433"
+
 @app.route('/login', methods=['POST'])
 def login():
     # Get username and password from the POST request
@@ -14,13 +17,13 @@ def login():
     # Connect to the database and validate credentials
     conn = psycopg2.connect(database="discord",
                             user="postgres",
-                            password="1234",
-                            host="localhost", port="5433")
+                            password=pswd,
+                            host="localhost", port=port_num)
 
     cur = conn.cursor()
 
     # Check if the username and password match a record in the database
-    cur.execute('''SELECT * FROM users WHERE user_name = %s AND password = %s''',
+    cur.execute('''SELECT login('%s','%s');''',
                 (username, password))
 
     user = cur.fetchone()
@@ -43,7 +46,7 @@ def get_user_servers():
     # Connect to the database
     conn = psycopg2.connect(database="discord",
                             user="postgres",
-                            password="1234",
+                            password=pswd,
                             host="localhost",
                             port="5433")
     
@@ -62,7 +65,7 @@ def get_user_servers():
 
     return jsonify({'servers': [server[0] for server in servers]}), 200
 
-@app.route('/friends/<username>', methods=['GET'])
+@app.route('/friends/<username>', methods=['POST'])
 def get_user_friends(username):
     
     # Connect to the database
@@ -70,7 +73,7 @@ def get_user_friends(username):
                             user="postgres",
                             password="postgres",
                             host="localhost",
-                            port="5433")
+                            port=port_num)
     
     cur = conn.cursor()
     
@@ -89,12 +92,4 @@ def get_user_friends(username):
 
 
 if __name__ == '__main__': 
-
-    conn = psycopg2.connect(database="discord",
-                            user="postgres",
-                            password="postgres",
-                            host="localhost",
-                            port="5433")
-
-    print(conn)
     app.run(debug=True, port=5000)
