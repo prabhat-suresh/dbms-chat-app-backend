@@ -5,10 +5,19 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # Add this line to enable CORS for all routes
 
-pswd="1234"
-port_num="5433"
+# user='Prabhat'
+user='Hemanth'
 
-@app.route('/login', methods=['POST'])
+if user=='Prabhat':
+    pswd="postgres"
+    port_num="5432"
+    method='GET'
+else:
+    pswd="1234"
+    port_num="5433"
+    method='POST'
+
+@app.route('/login', methods=[method])
 def login():
     # Get username and password from the POST request
     username = request.form.get('username')
@@ -18,12 +27,13 @@ def login():
     conn = psycopg2.connect(database="discord",
                             user="postgres",
                             password=pswd,
-                            host="localhost", port=port_num)
+                            host="localhost", 
+                            port=port_num)
 
     cur = conn.cursor()
 
     # Check if the username and password match a record in the database
-    cur.execute('''SELECT login('%s','%s');''',
+    cur.execute('''SELECT login(%s,%s);''',
                 (username, password))
 
     user = cur.fetchone()
@@ -39,7 +49,7 @@ def login():
         # Invalid credentials, return an error response
         return jsonify({'error': 'Invalid username or password'}), 400
 
-@app.route('/servers', methods=['POST'])
+@app.route('/servers', methods=[method])
 def get_user_servers():
     # Get username and password from the POST request
     username = request.form.get('username')
@@ -49,24 +59,21 @@ def get_user_servers():
                             user="postgres",
                             password=pswd,
                             host="localhost",
-                            port="5433")
+                            port=port_num)
     
     cur = conn.cursor()
     
     # Fetch servers where the user is a member
-    cur.execute('''SELECT s.name
-                   FROM server_member sm
-                   INNER JOIN server s ON sm.server_id = s.id
-                   WHERE sm.member = %s''', (username,))
+    cur.execute('''SELECT servers(%s)''', (username,))
     
     servers = cur.fetchall()
     
     cur.close()
     conn.close()
 
-    return jsonify({'servers': [server[0] for server in servers]}), 200
+    return jsonify({'servers': [server[1] for server in servers]}), 200
 
-@app.route('/friends/<username>', methods=['POST'])
+@app.route('/friends/<username>', methods=[method])
 def get_user_friends(username):
     
     # Connect to the database
