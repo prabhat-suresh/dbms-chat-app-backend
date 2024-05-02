@@ -27,11 +27,12 @@ def login():
                 (username, password))
 
     user = cur.fetchone()
+    isValidLogin=user[0]
 
     cur.close()
     conn.close()
 
-    if user:
+    if isValidLogin:
         # Successful login, return a success response
         return jsonify({'message': 'Login successful'}), 200
     else:
@@ -78,9 +79,7 @@ def get_user_friends(username):
     cur = conn.cursor()
     
     # Fetch servers where the user is a member
-    cur.execute('''SELECT user2
-                   FROM friends f
-                   WHERE user1 = %s''', (username,))
+    cur.execute('''SELECT friends_user(%s)''', (username,))
     
     friends = cur.fetchall()
     
